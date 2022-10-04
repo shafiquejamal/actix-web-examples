@@ -1,7 +1,9 @@
 
+### Simple GET request
+
 GET http://localhost:8080
 
-###
+### Simple POST request
 
 POST http://localhost:8080/echo
 content-type: application/json
@@ -11,33 +13,43 @@ content-type: application/json
     "activities": ["soccer", "piano"]
 }
 
-###
+### GET request in a path with a scope
 
 GET http://localhost:8080/api/api-get
 content-type: application/json
 
-###
+### GET request in a path with a scope and different sub path
 
-GET http://localhost:8080/api/api-get_b
+GET http://localhost:8080/api/api-get-b
 content-type: application/json
 
 
-###
+### GET request in a path with a scope ("/api") and subscope ("/v1")
 
 GET http://localhost:8080/api/v1/api-v1-get
 content-type: application/json
 
-###
+### GET request in a path with a scope ("/api") and subscope ("/v1") and a different path
 
-GET http://localhost:8080/api/v1/api-v1-get_b
+GET http://localhost:8080/api/v1/api-v1-get-b
 content-type: application/json
 
-###
+### GET request in a path with a scope ("/api") and second subscope ("/v2")
 
 GET http://localhost:8080/api/v2/api-v2-get
 content-type: application/json
 
-###
+### GET request in a path with a scope ("/api") and second subscope ("/v2") and different path
 
-GET http://localhost:8080/api/v2/api-v2-get_b
+GET http://localhost:8080/api/v2/api-v2-get-b
+content-type: application/json
+
+### GET with query params, both required and optional inputs specified
+
+GET http://localhost:8080/api/v2/api-v2-get-b-query-params?required_input=this-is-required&maybe_other_input=this-is-optional
+content-type: application/json
+
+### GET with query params, only required input specified
+
+GET http://localhost:8080/api/v2/api-v2-get-b-query-params?required_input=this-is-required
 content-type: application/json
