@@ -1,10 +1,16 @@
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder, Result};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
 struct Input {
     required_input: String,
     maybe_other_input: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct Animal {
+    age: u32,
+    animal: String,
 }
 
 #[get("/")]
@@ -54,6 +60,33 @@ async fn api_v2_get_hello_b_query_params(query_params: web::Query<Input>) -> imp
         query_params.required_input, query_params.maybe_other_input.as_deref().unwrap_or("default")))
 }
 
+#[get("/dynamic_segments/{age}/{animal}")]
+async fn path_dynamic_segments(path: web::Path<(u32, String)>) -> Result<String> {
+    let (age, animal) = path.into_inner();
+    Ok(format!(
+        "Dynamic: The animal '{animal}' is {age} years old."
+    ))
+}
+
+#[get("/struct/{age}/{animal}")]
+async fn path_struct(animal: web::Path<Animal>) -> Result<String> {
+    Ok(format!(
+        "Struct: The animal '{}' is {} years old.",
+        animal.animal, animal.age
+    ))
+}
+
+#[get("/struct-path-query/{age}/{animal}")]
+async fn path_struct_path_query(
+    animal: web::Path<Animal>,
+    path: web::Query<Input>,
+) -> Result<String> {
+    Ok(format!(
+        "Struct: The animal '{}' is {} years old.\nQuery params are required_input:{}, maybe_other_input:{}",
+        animal.animal, animal.age, path.required_input, path.maybe_other_input.as_ref().unwrap_or(&"default".to_string())
+    ))
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
@@ -70,7 +103,10 @@ async fn main() -> std::io::Result<()> {
                     web::scope("/v2")
                         .service(api_v2_get_hello)
                         .service(api_v2_get_hello_b)
-                        .service(api_v2_get_hello_b_query_params),
+                        .service(api_v2_get_hello_b_query_params)
+                        .service(path_dynamic_segments)
+                        .service(path_struct)
+                        .service(path_struct_path_query),
                 ),
         )
     })
