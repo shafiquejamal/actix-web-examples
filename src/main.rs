@@ -1,5 +1,7 @@
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder, Result};
-use serde::Deserialize;
+use std::sync::{Arc, Mutex};
+
+use actix_web::{delete, get, post, put, web, App, HttpResponse, HttpServer, Responder, Result};
+use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
 struct Input {
@@ -7,7 +9,7 @@ struct Input {
     maybe_other_input: Option<String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 struct Animal {
     age: u32,
     animal: String,
@@ -26,6 +28,14 @@ async fn echo(req_body: String) -> impl Responder {
 #[get("/api-get")]
 async fn api_get_hello() -> impl Responder {
     HttpResponse::Ok().body("'api_get_hello'. scope: API, method: GET")
+}
+
+#[get("/api-get-my-animal-result-responder")]
+async fn api_get_my_animal_result_responder() -> Result<impl Responder> {
+    Ok(web::Json(Animal {
+        age: 5,
+        animal: "dog".to_string(),
+    }))
 }
 
 #[get("/api-get-b")]
@@ -87,28 +97,94 @@ async fn path_struct_path_query(
     ))
 }
 
+// Rest (https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design)
+#[derive(Debug, Default, Serialize, Deserialize, Clone)]
+struct Fruit {
+    id: u32,
+    name: String,
+}
+
+struct FruitList {
+    fruits: Mutex<Vec<Fruit>>,
+}
+
+// Rest - get resource
+#[get("/fruits/{id}")]
+async fn get_fruit(fruit_id: web::Path<u32>, fruit_list: web::Data<FruitList>) -> HttpResponse {
+    let id = fruit_id.into_inner();
+    let maybe_fruit = fruit_list
+        .fruits
+        .lock()
+        .unwrap()
+        .iter()
+        .find(|&fruit| fruit.id == id)
+        .map(|fruit| fruit.clone());
+    match maybe_fruit {
+        Some(fruit) => HttpResponse::Ok().json(fruit),
+        None => HttpResponse::NotFound().finish(),
+    }
+}
+
+// Rest - update resource
+#[put("/fruits/{id}")]
+async fn update_fruit(fruit_id: web::Path<u32>) -> Result<impl Responder> {
+    Ok("")
+}
+
+// Rest - delete resource
+#[delete("/fruits/{id}")]
+async fn delete_fruit(fruit_id: web::Path<u32>) -> Result<impl Responder> {
+    Ok("")
+}
+
+// Rest - list resources
+#[get("/fruits")]
+async fn get_fruits() -> Result<impl Responder> {
+    Ok("")
+}
+
+// Rest - list resources
+#[post("/fruits")]
+async fn create_fruit() -> Result<impl Responder> {
+    Ok("")
+}
+// ------------------------------------------------------------------------------------------
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| {
-        App::new().service(hello).service(echo).service(
-            web::scope("/api")
-                .service(api_get_hello)
-                .service(api_get_hello_b)
-                .service(
-                    web::scope("/v1")
-                        .service(api_v1_get_hello)
-                        .service(api_v1_get_hello_b),
-                )
-                .service(
-                    web::scope("/v2")
-                        .service(api_v2_get_hello)
-                        .service(api_v2_get_hello_b)
-                        .service(api_v2_get_hello_b_query_params)
-                        .service(path_dynamic_segments)
-                        .service(path_struct)
-                        .service(path_struct_path_query),
-                ),
-        )
+    let fruit_list = web::Data::new(FruitList {
+        fruits: Mutex::new(vec![Fruit {
+            id: 5,
+            name: "pear".to_string(),
+        }]),
+    });
+
+    HttpServer::new(move || {
+        App::new()
+            .app_data(fruit_list.clone())
+            .service(hello)
+            .service(echo)
+            .service(api_get_my_animal_result_responder)
+            .service(
+                web::scope("/api")
+                    .service(api_get_hello)
+                    .service(api_get_hello_b)
+                    .service(
+                        web::scope("/v1")
+                            .service(api_v1_get_hello)
+                            .service(api_v1_get_hello_b),
+                    )
+                    .service(
+                        web::scope("/v2")
+                            .service(api_v2_get_hello)
+                            .service(api_v2_get_hello_b)
+                            .service(api_v2_get_hello_b_query_params)
+                            .service(path_dynamic_segments)
+                            .service(path_struct)
+                            .service(path_struct_path_query)
+                            .service(get_fruit),
+                    ),
+            )
     })
     .bind(("127.0.0.1", 8080))?
     .run()

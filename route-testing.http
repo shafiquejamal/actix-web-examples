@@ -3,6 +3,10 @@
 
 GET http://localhost:8080
 
+### Simple GET request returning JSON body, using Result<impl Respnder>
+
+GET http://localhost:8080/api-get-my-animal-result-responder
+
 ### Simple POST request
 
 POST http://localhost:8080/echo
@@ -67,4 +71,13 @@ content-type: application/json
 ### GET request: path with a scope ("/api") and second subscope ("/v2") and path params (struct) and query params
 
 GET http://localhost:8080/api/v2/struct-path-query/11/alligator?required_input=this-is-required&maybe_other_input=this-is-optional
+content-type: application/json
+
+### Rest API with in memory shared mutable state - returns not found
+
+GET http://localhost:8080/api/v2/fruits/99999
+content-type: application/json
+
+### Rest API with in memory shared mutable state - returns a match
+GET http://localhost:8080/api/v2/fruits/5
 content-type: application/json
