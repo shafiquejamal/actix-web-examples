@@ -118,3 +118,7 @@ content-type: application/json
     "id": 559,
     "name": "plum"
 }
+
+### Rest API PUT resource  with in memory shared mutable state - list fruits
+GET http://localhost:8080/api/v2/fruits
+content-type: application/json

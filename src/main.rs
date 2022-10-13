@@ -120,6 +120,7 @@ struct Fruit {
     name: String,
 }
 
+#[derive(Serialize)]
 struct FruitList {
     fruits: Mutex<Vec<Fruit>>,
 }
@@ -163,8 +164,9 @@ async fn delete_fruit(fruit_id: web::Path<u32>) -> Result<impl Responder> {
 
 // Rest - list resources
 #[get("/fruits")]
-async fn get_fruits() -> Result<impl Responder> {
-    Ok("")
+async fn get_fruits(fruit_list: web::Data<FruitList>) -> HttpResponse {
+    let fruits = fruit_list.fruits.lock().unwrap();
+    HttpResponse::Ok().json(fruits.clone())
 }
 
 // Rest - list resources
@@ -208,7 +210,8 @@ async fn main() -> std::io::Result<()> {
                             .service(path_struct)
                             .service(path_struct_path_query)
                             .service(get_fruit)
-                            .service(update_fruit),
+                            .service(update_fruit)
+                            .service(get_fruits),
                     ),
             )
     })
