@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 
 use actix_web::{delete, get, post, put, web, App, HttpResponse, HttpServer, Responder, Result};
 use serde::{Deserialize, Serialize};
@@ -7,6 +7,12 @@ use serde::{Deserialize, Serialize};
 struct Input {
     required_input: String,
     maybe_other_input: Option<String>,
+}
+
+#[derive(Serialize)]
+struct Output {
+    required: String,
+    maybe_other: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -23,6 +29,16 @@ async fn hello() -> impl Responder {
 #[post("/echo")]
 async fn echo(req_body: String) -> impl Responder {
     HttpResponse::Ok().body("Input was:".to_owned() + &req_body)
+}
+
+#[post("/post-with-body-deserialized")]
+async fn post_with_body_deserialized(input: web::Json<Input>) -> Result<impl Responder> {
+    let ip = input.into_inner();
+    let output = Output {
+        required: ip.required_input,
+        maybe_other: ip.maybe_other_input,
+    };
+    Ok(web::Json(output))
 }
 
 #[get("/api-get")]
@@ -119,16 +135,24 @@ async fn get_fruit(fruit_id: web::Path<u32>, fruit_list: web::Data<FruitList>) -
         .iter()
         .find(|&fruit| fruit.id == id)
         .map(|fruit| fruit.clone());
-    match maybe_fruit {
-        Some(fruit) => HttpResponse::Ok().json(fruit),
-        None => HttpResponse::NotFound().finish(),
-    }
+    maybe_fruit
+        .map(|fruit| HttpResponse::Ok().json(fruit))
+        .unwrap_or(HttpResponse::NotFound().finish())
 }
 
 // Rest - update resource
 #[put("/fruits/{id}")]
-async fn update_fruit(fruit_id: web::Path<u32>) -> Result<impl Responder> {
-    Ok("")
+async fn update_fruit(
+    fruit: web::Json<Fruit>,
+    fruit_list: web::Data<FruitList>,
+) -> Result<impl Responder> {
+    let mut fruits = fruit_list.fruits.lock().unwrap();
+    let maybe_fruit = fruits.iter_mut().find(|frt| frt.id == fruit.id);
+    match maybe_fruit {
+        Some(found_fruit) => (*found_fruit).name = fruit.into_inner().name,
+        None => fruits.push(fruit.into_inner()),
+    };
+    Ok("".to_string())
 }
 
 // Rest - delete resource
@@ -165,6 +189,7 @@ async fn main() -> std::io::Result<()> {
             .service(hello)
             .service(echo)
             .service(api_get_my_animal_result_responder)
+            .service(post_with_body_deserialized)
             .service(
                 web::scope("/api")
                     .service(api_get_hello)
@@ -182,7 +207,8 @@ async fn main() -> std::io::Result<()> {
                             .service(path_dynamic_segments)
                             .service(path_struct)
                             .service(path_struct_path_query)
-                            .service(get_fruit),
+                            .service(get_fruit)
+                            .service(update_fruit),
                     ),
             )
     })

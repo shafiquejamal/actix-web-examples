@@ -17,6 +17,25 @@ content-type: application/json
     "activities": ["soccer", "piano"]
 }
 
+### Simple POST request with body deserialized and serialized output - missing optional field
+
+POST http://localhost:8080/post-with-body-deserialized
+content-type: application/json
+
+{
+    "required_input": "sample"
+}
+
+### Simple POST request with body deserialized and serialized output - with optional field
+
+POST http://localhost:8080/post-with-body-deserialized
+content-type: application/json
+
+{
+    "required_input": "sample",
+    "maybe_other_input": "the optional field is present"
+}
+
 ### GET request: a path with a scope
 
 GET http://localhost:8080/api/api-get
@@ -73,11 +92,29 @@ content-type: application/json
 GET http://localhost:8080/api/v2/struct-path-query/11/alligator?required_input=this-is-required&maybe_other_input=this-is-optional
 content-type: application/json
 
-### Rest API with in memory shared mutable state - returns not found
+### Rest API GET resource with in memory shared mutable state - returns not found
 
 GET http://localhost:8080/api/v2/fruits/99999
 content-type: application/json
 
-### Rest API with in memory shared mutable state - returns a match
+### Rest API GET resource  with in memory shared mutable state - returns a match
 GET http://localhost:8080/api/v2/fruits/5
 content-type: application/json
+
+### Rest API PUT resource  with in memory shared mutable state - modify existing
+PUT http://localhost:8080/api/v2/fruits/5
+content-type: application/json
+
+{
+    "id": 5,
+    "name": "pineapple"
+}
+
+### Rest API PUT resource  with in memory shared mutable state - create new
+PUT http://localhost:8080/api/v2/fruits/5
+content-type: application/json
+
+{
+    "id": 559,
+    "name": "plum"
+}
