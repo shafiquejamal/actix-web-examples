@@ -158,8 +158,16 @@ async fn update_fruit(
 
 // Rest - delete resource
 #[delete("/fruits/{id}")]
-async fn delete_fruit(fruit_id: web::Path<u32>) -> Result<impl Responder> {
-    Ok("")
+async fn delete_fruit(
+    fruit_id: web::Path<u32>,
+    fruit_list: web::Data<FruitList>,
+) -> Result<impl Responder> {
+    let id = fruit_id.into_inner();
+    let mut fruits = fruit_list.fruits.lock().unwrap();
+    if let Some(pos) = fruits.iter_mut().position(|fruit| fruit.id == id) {
+        fruits.remove(pos);
+    }
+    Ok("".to_string())
 }
 
 // Rest - list resources
@@ -211,6 +219,7 @@ async fn main() -> std::io::Result<()> {
                             .service(path_struct_path_query)
                             .service(get_fruit)
                             .service(update_fruit)
+                            .service(delete_fruit)
                             .service(get_fruits),
                     ),
             )
