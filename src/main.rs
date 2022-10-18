@@ -1,7 +1,9 @@
 use std::sync::Mutex;
 
 use actix_web::{web, App, HttpServer};
+use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use learn_actix_web::{
+    graphql::{graphql_post, index_graphiql, MyObject},
     rest::{delete_fruit, get_fruit, get_fruits, update_fruit, Fruit, FruitList},
     simple::{
         api_get_hello, api_get_hello_b, api_get_my_animal_result_responder, echo, hello,
@@ -17,6 +19,10 @@ use learn_actix_web::{
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    std::env::set_var("RUST_LOG", "debug");
+    std::env::set_var("RUST_BACKTRACE", "1");
+    env_logger::init();
+
     let fruit_list = web::Data::new(FruitList {
         fruits: Mutex::new(vec![Fruit {
             id: 5,
@@ -24,14 +30,30 @@ async fn main() -> std::io::Result<()> {
         }]),
     });
 
+    let schema = Schema::build(
+        MyObject {
+            value: 11,
+            person: None,
+            persons: vec![],
+        },
+        EmptyMutation,
+        EmptySubscription,
+    )
+    .finish();
+
+    println!("GraphiQL IDE: http://localhost:8080/graphql");
+
     HttpServer::new(move || {
         App::new()
             .app_data(fruit_list.clone())
+            .app_data(web::Data::new(schema.clone()))
             .route("/ws/", web::get().to(index))
             .service(hello)
             .service(echo)
             .service(api_get_my_animal_result_responder)
             .service(post_with_body_deserialized)
+            .service(index_graphiql)
+            .service(graphql_post)
             .service(
                 web::scope("/api")
                     .service(api_get_hello)

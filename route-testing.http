@@ -127,3 +127,9 @@ content-type: application/json
 ### Rest API DELETE resource  with in memory shared mutable state - delete fruit
 DELETE http://localhost:8080/api/v2/fruits/5
 content-type: application/json
+
+### Graphql
+POST http://localhost:8080/graphql
+content-type: application/json
+
+{ "query": "{ value, person { name }, persons { id { department  } }}" }
