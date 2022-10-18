@@ -1,9 +1,7 @@
 use actix_web::{get, post, web, HttpResponse};
 use async_graphql::{http::GraphiQLSource, Object, SimpleObject};
-use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+use async_graphql::{EmptyMutation, EmptySubscription, MergedObject, Schema};
 use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
-
-use async_graphql::*;
 
 #[derive(SimpleObject)]
 pub struct Id {
@@ -16,14 +14,16 @@ pub struct Person {
     pub name: &'static str,
     pub id: Id,
 }
-pub struct MyObject {
+
+#[derive(Default)]
+pub struct EmployeeQuery {
     pub value: i32,
     pub person: Option<Person>,
     pub persons: Vec<Person>,
 }
 
 #[Object]
-impl MyObject {
+impl EmployeeQuery {
     /// Returns the sum of a and b
     async fn add(&self, a: i32, b: i32) -> i32 {
         a + b
@@ -69,6 +69,21 @@ impl MyObject {
     }
 }
 
+#[derive(Default)]
+pub struct PetQuery {
+    pub aminal_type: &'static str,
+}
+
+#[Object]
+impl PetQuery {
+    async fn get_animal_type(&self) -> &'static str {
+        self.aminal_type
+    }
+}
+
+#[derive(MergedObject, Default)]
+pub struct MergedQuery(EmployeeQuery, PetQuery);
+
 // This is route to the IDE - note the 'i'
 #[get("/graphiql")]
 pub async fn index_graphiql() -> HttpResponse {
@@ -81,7 +96,7 @@ pub async fn index_graphiql() -> HttpResponse {
         )
 }
 
-type MySchema = Schema<MyObject, EmptyMutation, EmptySubscription>;
+type MySchema = Schema<MergedQuery, EmptyMutation, EmptySubscription>;
 
 #[post("/graphql")]
 pub async fn graphql_post(schema: web::Data<MySchema>, req: GraphQLRequest) -> GraphQLResponse {

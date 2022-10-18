@@ -132,4 +132,4 @@ content-type: application/json
 POST http://localhost:8080/graphql
 content-type: application/json
 
-{ "query": "{ value, person { name }, persons { id { department  } }}" }
+{ "query": "{ value, person { name }, persons { id { department  } }, getAnimalType }" }

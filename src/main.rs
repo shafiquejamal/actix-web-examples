@@ -3,7 +3,7 @@ use std::sync::Mutex;
 use actix_web::{web, App, HttpServer};
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use learn_actix_web::{
-    graphql::{graphql_post, index_graphiql, MyObject},
+    graphql::{graphql_post, index_graphiql, EmployeeQuery, MergedQuery},
     rest::{delete_fruit, get_fruit, get_fruits, update_fruit, Fruit, FruitList},
     simple::{
         api_get_hello, api_get_hello_b, api_get_my_animal_result_responder, echo, hello,
@@ -30,16 +30,7 @@ async fn main() -> std::io::Result<()> {
         }]),
     });
 
-    let schema = Schema::build(
-        MyObject {
-            value: 11,
-            person: None,
-            persons: vec![],
-        },
-        EmptyMutation,
-        EmptySubscription,
-    )
-    .finish();
+    let schema = Schema::build(MergedQuery::default(), EmptyMutation, EmptySubscription).finish();
 
     println!("GraphiQL IDE: http://localhost:8080/graphql");
 
