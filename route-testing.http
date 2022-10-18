@@ -1,7 +1,7 @@
 
 ### Simple GET request
 
-GET http://localhost:8080
+GET http://localhost:8080/hello
 
 ### Simple GET request returning JSON body, using Result<impl Respnder>
 

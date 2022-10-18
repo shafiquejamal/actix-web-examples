@@ -9,7 +9,7 @@ struct Output {
     maybe_other: Option<String>,
 }
 
-#[get("/")]
+#[get("/hello")]
 async fn hello() -> impl Responder {
     HttpResponse::Ok().body("Hello world!")
 }
