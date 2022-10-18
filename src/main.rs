@@ -3,7 +3,7 @@ use std::sync::Mutex;
 use actix_web::{web, App, HttpServer};
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use learn_actix_web::{
-    graphql::{graphql_post, index_graphiql, EmployeeQuery, MergedQuery},
+    graphql::{graphql_post, index_graphiql, MergedQuery},
     rest::{delete_fruit, get_fruit, get_fruits, update_fruit, Fruit, FruitList},
     simple::{
         api_get_hello, api_get_hello_b, api_get_my_animal_result_responder, echo, hello,
@@ -69,7 +69,7 @@ async fn main() -> std::io::Result<()> {
                     ),
             )
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(("0.0.0.0", 8080))?
     .run()
     .await
 }
