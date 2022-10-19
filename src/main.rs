@@ -1,8 +1,7 @@
 use std::sync::Mutex;
 
-use actix_files as fs;
-use actix_files::NamedFile;
-use actix_web::{web, App, HttpServer, Result};
+use actix_web::{web, App, HttpServer};
+use actix_web_static_files::ResourceFiles;
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use learn_actix_web::{
     graphql::{graphql_post, index_graphiql, MergedQuery},
@@ -19,9 +18,7 @@ use learn_actix_web::{
     web_socket::web_socket::index,
 };
 
-async fn react() -> Result<NamedFile> {
-    Ok(NamedFile::open("./src/front-end/build/index.html")?)
-}
+include!(concat!(env!("OUT_DIR"), "/generated.rs"));
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -41,12 +38,11 @@ async fn main() -> std::io::Result<()> {
     println!("GraphiQL IDE: http://localhost:8080/graphql");
 
     HttpServer::new(move || {
+        let generated = generate(); // For serving the React App
         App::new()
             .app_data(fruit_list.clone())
             .app_data(web::Data::new(schema.clone()))
             .route("/ws/", web::get().to(index))
-            .route("/", web::get().to(react))
-            .service(fs::Files::new("/static", "./src/front-end/build/static"))
             .service(hello)
             .service(echo)
             .service(api_get_my_animal_result_responder)
@@ -76,6 +72,7 @@ async fn main() -> std::io::Result<()> {
                             .service(get_fruits),
                     ),
             )
+            .service(ResourceFiles::new("/", generated)) // Serves the React App
     })
     .bind(("0.0.0.0", 8080))?
     .run()
