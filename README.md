@@ -14,5 +14,5 @@ References:
 - [Actix-Web](https://actix.rs/)
 - [async-graphql](https://async-graphql.github.io/async-graphql/en/index.html)
 - [Rust with GraphQL and Apollo federation](https://github.com/rkudryashov/graphql-rust-demo)
-
+- [Serving static files](https://github.com/kilork/actix-web-static-files)
 
