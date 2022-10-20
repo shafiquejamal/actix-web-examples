@@ -1,4 +1,7 @@
+pub mod actor;
 pub mod graphql;
+pub mod kafka_consumer;
+pub mod kafka_producer;
 pub mod models;
 pub mod rest;
 pub mod simple;

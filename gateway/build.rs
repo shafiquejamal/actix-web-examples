@@ -1,13 +1,12 @@
 use std::{
-    env,
-    path::Path,
+    env, fs,
+    path::{Path, PathBuf},
     process::{self},
 };
 
 use static_files::resource_dir;
 
 fn main() -> std::io::Result<()> {
-    println!("Building...");
     #[cfg(windows)]
     pub const YARN: &'static str = "yarn.cmd";
 
@@ -19,9 +18,6 @@ fn main() -> std::io::Result<()> {
     let _ = process::Command::new(YARN).arg("install").status();
     let _ = process::Command::new(YARN).arg("build").status();
 
-    let _ = resource_dir(
-        "/Users/shafiquejamal/projects/rust/learn-actix/learn-actix-web/src/front-end/build",
-    )
-    .build();
+    let _ = resource_dir("./build").build();
     Ok(())
 }

@@ -1,0 +1,12 @@
+@startuml
+Client -> Gateway : GraphQL request
+Gateway -> Kafka : GetPerson (topic: from_router)
+Gateway -> Kafka : GetPersons (topic: from_router)
+Kafka -> UserService : GetPerson
+Kafka -> UserService : GetPersons
+UserService -> Kafka : Person (topic: from_service)
+UserService -> Kafka : Persons (topic: from_service)
+Kafka -> Gateway: Person
+Kafka -> Gateway: Persons
+Gateway -> Client : GraphQL response
+@enduml
