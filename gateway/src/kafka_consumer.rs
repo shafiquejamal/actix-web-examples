@@ -88,6 +88,7 @@ impl IngestConsumer {
                     info!("key: '{:?}', payload: '{}', topic: {}, partition: {}, offset: {}, timestamp: {:?}",
                           m.key(), payload, m.topic(), m.partition(), m.offset(), m.timestamp());
 
+                    // TODO: Handle the errors, reduce code duplication. Replace match with Map?  See: https://www.reddit.com/r/rust/comments/5mnj3y/which_has_better_performance_a_hashmap_or_a/
                     let request_id =
                         String::from_utf8(m.key().map(|x| x.to_vec()).unwrap()).unwrap();
                     let json: serde_json::Value =

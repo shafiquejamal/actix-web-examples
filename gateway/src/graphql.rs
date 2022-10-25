@@ -79,6 +79,7 @@ impl EmployeeQuery {
         let producer = (*ctx.data::<FutureProducer>().unwrap()).clone();
         let payload = json!(ServiceRequest::get_person(request_id.to_string())).to_string();
         let topic = "from_router";
+        // TODO: There is duplication here with code in the next method. Refactor to reduce duplication.
         producer
             .send(
                 FutureRecord::to(topic)
